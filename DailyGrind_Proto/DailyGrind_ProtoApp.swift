@@ -27,6 +27,6 @@ struct DailyGrind_ProtoApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(for: ItemTask.self)
     }
 }
