@@ -4,34 +4,36 @@
 //
 //  Created by Joseph DeWeese on 3/7/25.
 //
+
+
 import SwiftUI
 import SwiftData
-
 
 
 
 struct TaskListView: View {
     // MARK: - Properties
     @Environment(\.modelContext) private var modelContext
-    @Binding var itemTasks: [ItemTask] // Binding to the item's tasks
+    @Binding var itemTasks: [ItemTask] // Binding to the item's tasks - updates tasks
+    let itemCategory: Category // Use let instead of @State since we only read the value
     @State private var showingAddTask = false
     @State private var taskToEdit: ItemTask?
-    @State private var itemCategory: Category
     @State private var taskListHeight: CGFloat = 0
 
     // MARK: - Section Styling Configuration
     private struct SectionStyle {
-        static let cornerRadius: CGFloat = 10  // Corner radius for sections
-        static let padding: CGFloat = 16  // Padding for sections
-        static let backgroundOpacity: Double = 0.01  // Base background opacity
-        static let reducedOpacity: Double = backgroundOpacity * 0.30  // Reduced opacity for layering
+        static let cornerRadius: CGFloat = 10
+        static let padding: CGFloat = 16
+        static let backgroundOpacity: Double = 0.01
+        static let reducedOpacity: Double = backgroundOpacity * 0.30
     }
-   
+
     // MARK: - Initialization
     init(itemTasks: Binding<[ItemTask]>, itemCategory: Category) {
         self._itemTasks = itemTasks
-        self._itemCategory = State(initialValue: itemCategory)
+        self.itemCategory = itemCategory
     }
+
     // MARK: - Preference Key for Height Measurement
     struct HeightPreferenceKey: PreferenceKey {
         static var defaultValue: CGFloat = 0
@@ -39,7 +41,7 @@ struct TaskListView: View {
             value = max(value, nextValue())
         }
     }
-    
+
     // MARK: - Body
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -49,9 +51,9 @@ struct TaskListView: View {
                     .foregroundStyle(itemCategory.color)
                     .font(.title2)
                     .fontWeight(.semibold)
-
+                
                 Spacer()
-
+                
                 Button(action: {
                     taskToEdit = nil
                     showingAddTask = true
@@ -66,7 +68,7 @@ struct TaskListView: View {
                 .accessibilityLabel("Add Task")
                 .accessibilityHint("Tap to add a new task to this item")
             }
-
+            
             // Content based on whether there are tasks
             if itemTasks.isEmpty {
                 ContentUnavailableView(
@@ -78,7 +80,7 @@ struct TaskListView: View {
                         Text("Add a new task by tapping the plus (+) button above.")
                             .foregroundStyle(.gray)
                     }
-                    )
+                )
             } else {
                 List {
                     ForEach(itemTasks.indices, id: \.self) { index in
@@ -105,34 +107,26 @@ struct TaskListView: View {
                             }
                         }
                     }
-                }.padding(4)
+                }
+                .padding(4)
                 .listStyle(.plain)
-                .frame(minHeight: 450, maxHeight: 1000) // Ensure the list has enough space to render
+                .frame(minHeight: 450, maxHeight: 1000)
             }
         }
         .sheet(isPresented: $showingAddTask) {
-            TaskFormView(taskToEdit: $taskToEdit, itemCategory: $itemCategory, onSave: { newTask in
+            TaskFormView(taskToEdit: $taskToEdit, itemCategory: .constant(itemCategory), onSave: { newTask in
                 if let taskToEdit = taskToEdit, let index = itemTasks.firstIndex(where: { $0 === taskToEdit }) {
                     // Update existing task
                     itemTasks[index] = newTask
                 } else {
                     // Add new task
                     itemTasks.append(newTask)
+                    modelContext.insert(newTask) // Ensure the new task is inserted into the context
                 }
             })
             .presentationDetents([.medium])
         }
-        .background(
-            GeometryReader { geometry in
-                Color.clear
-                    .preference(key: HeightPreferenceKey.self, value: geometry.size.height)
-            }
-        )
-        .onPreferenceChange(HeightPreferenceKey.self) { height in
-            taskListHeight = height
-        }
     }
-
     // MARK: - Methods
     private func handleTaskRowEvent(_ event: TaskRowEvent, for task: ItemTask) {
         switch event {
@@ -149,7 +143,7 @@ struct TaskListView: View {
         modelContext.delete(task)
         saveContext()
     }
-
+//MARK: SAVED CONTEXT FUNCTION
     private func saveContext() {
         do {
             if modelContext.hasChanges {

@@ -71,6 +71,7 @@ struct ItemEditView: View {
             initialStatus = Item.Status(rawValue: editItem.status)!
             initialTags = editItem.tags
             initialItemTasks = editItem.itemTasks
+        
         }
     
     // MARK: - Body
@@ -432,7 +433,8 @@ struct ItemEditView: View {
             || dateStarted != initialDateStarted
             || dateCompleted != initialDateCompleted
             || itemCategory != initialCategory || editItem.tags != initialTags
-            || itemTasks != initialItemTasks
+            || itemTasks != initialItemTasks || itemStatus != initialStatus
+    
         }
   
     // MARK: **Task Section**
@@ -484,7 +486,7 @@ struct ItemEditView: View {
     }
     
     
-    // MARK: - Private Methods
+    // MARK: - Save Edited Item Function
     private func saveEditedItem() {
         // Update working copy with current values
         editItem.title = taskName
@@ -494,15 +496,15 @@ struct ItemEditView: View {
         editItem.dateStarted = dateStarted
         editItem.dateCompleted = dateCompleted
         editItem.category = itemCategory.rawValue
-        // Note: Tags are updated via the tagsSection
-        
+        editItem.status = itemStatus.rawValue
+        editItem.itemTasks = itemTasks // Assign the updated tasks to editItem
+
         do {
-            try context.save()  // Save changes to SwiftData
-            HapticsManager.notification(type: .success)  // Success feedback
-            dismiss()  // Close the view
+            try context.save() // Save changes to SwiftData
+            HapticsManager.notification(type: .success) // Success feedback
+            dismiss() // Close the view
         } catch {
-            errorMessage =
-            "Failed to save changes: \(error.localizedDescription)"
+            errorMessage = "Failed to save changes: \(error.localizedDescription)"
             showErrorAlert = true
             print("Save error: \(error.localizedDescription)")
         }

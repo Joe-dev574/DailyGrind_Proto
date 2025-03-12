@@ -59,7 +59,7 @@ struct TaskRowView: View {
                 .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
             
             
-            HStack(alignment: .center, spacing: 12) {
+            HStack{
                 // Completion toggle button with animation
                 Button(action: {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
@@ -75,21 +75,22 @@ struct TaskRowView: View {
                         .scaleEffect(checked ? 1.1 : 1.0)
                         .animation(.easeInOut(duration: 0.2), value: checked)
                 }
+                .padding(.leading, 4)
                 .buttonStyle(.plain)
                 .accessibilityLabel(checked ? "Mark as incomplete" : "Mark as complete")
 
                 // Task details in a clean, readable layout
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading) {
                     // Task name with dynamic styling
                     Text(itemTask.taskName)
                         .font(.title3)
                         .foregroundStyle(.mediumGrey)
                         .fontWeight(.semibold)
                         .strikethrough(checked, color: .gray)
-                        .lineLimit(2)
-                        .padding(.leading, 10)
+                        .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
-
+                        .padding(.horizontal, 7)
+                        .padding(.bottom, 2)
                     // Task description if available
                     if !itemTask.taskDescription.isEmpty {
                         Text(itemTask.taskDescription)
@@ -98,11 +99,12 @@ struct TaskRowView: View {
                             .strikethrough(checked, color: .gray)
                             .lineLimit(3)
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 7)
                             .padding(.bottom, 8)
                     }
 
                     // Dates in a compact, side-by-side layout
-                    VStack(alignment: .leading, spacing: 5){
+                    VStack(alignment: .leading){
                         HStack{
                             // Date Created
                             Text("Created: ")
@@ -111,23 +113,25 @@ struct TaskRowView: View {
                             Label(formatItemTaskDate(itemTask.dateCreated), systemImage: "calendar")
                                 .font(.caption)
                                 .foregroundStyle(.gray)
-                                .lineLimit(1)
-                        }.padding(.leading, 15)
-                        HStack{
+                                .padding(.horizontal, -10)
+                             
+                            Spacer()
+                            
                             // Due Date with dynamic color based on urgency
-                            Text("Due: ")
+                            Text("Due:  ")
                                 .font(.caption2)
                                 .foregroundStyle(.mediumGrey)
                             Label(formatItemTaskDate(itemTask.taskDueDate), systemImage: "clock")
                                 .font(.caption)
                                 .foregroundStyle(dueDateColor)
-                                .lineLimit(1)
-                        }.padding(.leading, 15)
+                                .padding(.horizontal, -10)
+                            Spacer()
+                        }
                     }
-                }
+                }.padding(2)
             }
             .padding(.vertical, 10)
-            .padding(.horizontal, 1)
+        
          
         }
         .onAppear {
