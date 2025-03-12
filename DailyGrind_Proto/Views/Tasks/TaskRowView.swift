@@ -55,9 +55,10 @@ struct TaskRowView: View {
         ZStack {
             // Subtle background for depth
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.systemBackground))
+                .fill(Color(.inSelectedCategory))
                 .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-
+            
+            
             HStack(alignment: .center, spacing: 12) {
                 // Completion toggle button with animation
                 Button(action: {

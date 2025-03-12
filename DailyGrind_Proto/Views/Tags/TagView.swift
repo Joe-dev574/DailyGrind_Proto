@@ -77,6 +77,7 @@ struct TagView: View {
                                     .foregroundStyle(.white)
                             }
                             .buttonStyle(.borderedProminent)
+                            .tint(.lightGrey)
                         } label: {
                             Text("Create new Tag")
                                 .font(.caption).foregroundStyle(.secondary)

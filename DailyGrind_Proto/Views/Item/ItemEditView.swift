@@ -16,8 +16,9 @@ struct ItemEditView: View {
     @Environment(\.dismiss) private var dismiss  // Environment value to dismiss the view
     
     let item: Item  // The original item being edited (immutable reference)
-   
+    @Query(sort: \Tag.name) var tags: [Tag]
     // MARK: - State Properties
+    @State private var newTag = false
     private let editItem: Item  // Working copy of the item for editing
     @State var taskToEdit: ItemTask?
     @State var showingAddTask = false
@@ -251,62 +252,87 @@ struct ItemEditView: View {
     
     // MARK: Tag Section
     private var tagsSection: some View {
+        
+        
         VStack(alignment: .leading) {
-            HStack {
-                Text("Tags")
-                    .foregroundStyle(itemCategory.color)  // Section title in medium grey(off black : off white)
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                Spacer()
-                //      MARK:  Button to show tags management sheet
-                Button {
-                    HapticsManager.notification(type: .success)
-                    showTags.toggle()
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .imageScale(.large)
+            if tags.isEmpty{
+                ContentUnavailableView {
+                    Image(systemName: "tag.fill")
+                        .font(.largeTitle)
                         .foregroundStyle(itemCategory.color)
-                        .padding()
-                        .background(itemCategory.color.opacity(0.1))
-                        .clipShape(Circle())
-                }
-                .sheet(isPresented: $showTags) {
-                    TagView(item: item)
-                        .presentationDetents([.medium, .large])
-                        .presentationDragIndicator(.visible)
-                }.padding(.bottom, 8)
-            }
-            VStack(alignment: .leading) {
-                // Display existing tags in a horizontal scroll view
-                if let tags = editItem.tags, !tags.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(tags, id: \.self) { tag in
-                                TagItemView(
-                                    ///actual tag view
-                                    tag: tag,
-                                    onDelete: {
-                                        // Remove tag from the editable item's tags array
-                                        if let index = editItem.tags?
-                                            .firstIndex(of: tag)
-                                        {
-                                            editItem.tags?.remove(at: index)
-                                        }
-                                    }
-                                ).padding(.horizontal, 4)
-                                
-                            }.padding(.top, 7)
-                        }
+                } description: {
+                    Text("Create a tag for some focus and organization.")
+                        .fontDesign(.serif)
+                        .foregroundStyle(.lightGrey)
+                } actions: {
+                    Button("Create Tag") {
+                        showTags.toggle()
                     }
-                    .frame(height: 50)
-                } else {
-                    Text("No tags added")
-                        .foregroundStyle(.gray)
-                        .font(.subheadline)
+                    .fontDesign(.serif)
+                                        .fontWeight(.bold)
+                                        .buttonStyle(.borderedProminent)
+                                        .tint(itemCategory.color)
+                                        .padding(20)
+                                        .accessibilityLabel("Create Tag")
+                                        .accessibilityHint("Tap to add a new tag to this item")
+                }
+            } else {
+                HStack {
+                    Text("Tags")
+                        .foregroundStyle(itemCategory.color)  // Section title in medium grey(off black : off white)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                    Spacer()
+                    //      MARK:  Button to show tags management sheet
+                    Button {
+                        HapticsManager.notification(type: .success)
+                        showTags.toggle()
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .imageScale(.large)
+                            .foregroundStyle(itemCategory.color)
+                            .padding()
+                            .background(itemCategory.color.opacity(0.1))
+                            .clipShape(Circle())
+                    }
+                    .sheet(isPresented: $showTags) {
+                        TagView(item: item)
+                            .presentationDetents([.medium, .large])
+                            .presentationDragIndicator(.visible)
+                    }.padding(.bottom, 8)
+                }
+                
+                VStack(alignment: .leading) {
+                    // Display existing tags in a horizontal scroll view
+                    if let tags = editItem.tags, !tags.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(tags, id: \.self) { tag in
+                                    TagItemView(
+                                        ///actual tag view
+                                        tag: tag,
+                                        onDelete: {
+                                            // Remove tag from the editable item's tags array
+                                            if let index = editItem.tags?
+                                                .firstIndex(of: tag)
+                                            {
+                                                editItem.tags?.remove(at: index)
+                                            }
+                                        }
+                                    ).padding(.horizontal, 4)
+                                    
+                                }.padding(.top, 7)
+                            }
+                        }
+                        .frame(height: 50)
+                    } else {
+                        Text("No tags added")
+                            .foregroundStyle(.gray)
+                            .font(.subheadline)
+                    }
                 }
             }
         }
-        
         .padding(SectionStyle.padding)
         .background(itemCategory.color.opacity(SectionStyle.reducedOpacity))
         .clipShape(RoundedRectangle(cornerRadius: SectionStyle.cornerRadius))
@@ -315,8 +341,7 @@ struct ItemEditView: View {
                 .stroke(itemCategory.color.opacity(0.3), lineWidth: 2)
         )
     }
-    
-    // MARK: Status Section
+    //MARK:***** STATUS*******
     private var statusSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Status")
